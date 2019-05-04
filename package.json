@@ -1,0 +1,26 @@
+{
+  "name": "neat-evolution",
+  "version": "1.0.0",
+  "description": "",
+  "main": "game/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Code-Bullet/NEAT-Template-JavaScript.git"
+  },
+  "keywords": [
+    "neat"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Code-Bullet/NEAT-Template-JavaScript/issues"
+  },
+  "homepage": "https://github.com/Code-Bullet/NEAT-Template-JavaScript#readme",
+  "dependencies": {
+    "blob": "0.0.5",
+    "parcel": "^1.12.3"
+  }
+}

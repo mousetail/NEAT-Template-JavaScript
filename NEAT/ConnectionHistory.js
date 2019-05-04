@@ -1,4 +1,4 @@
-class connectionHistory {
+export class ConnectionHistory {
   constructor(from, to, inno, innovationNos) {
     this.fromNode = from;
     this.toNode = to;
@@ -6,7 +6,7 @@ class connectionHistory {
     this.innovationNumbers = []; //the innovation Numbers from the connections of the genome which first had this mutation
     //this represents the genome and allows us to test if another genoeme is the same
     //this is before this connection was added
-    arrayCopy(innovationNos, this.innovationNumbers); //copy (from, to)
+    this.innovationNumber=[...innovationNos];
   }
 
   //----------------------------------------------------------------------------------------------------------------

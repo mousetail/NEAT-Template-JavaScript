@@ -1,4 +1,4 @@
-class Node {
+export class Node {
 
   constructor(no) {
     this.number = no;
@@ -6,7 +6,7 @@ class Node {
     this.outputValue = 0; //after activation function is applied
     this.outputConnections = []; //new ArrayList<connectionGene>();
     this.layer = 0;
-    this.drawPos = createVector();
+    //this.drawPos = createVector();
   }
 
   //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -18,7 +18,8 @@ class Node {
 
       for(var i = 0; i < this.outputConnections.length; i++) { //for each connection
         if(this.outputConnections[i].enabled) { //dont do shit if not enabled
-          this.outputConnections[i].toNode.inputSum += this.outputConnections[i].weight * this.outputValue; //add the weighted output to the sum of the inputs of whatever node this node is connected to
+          this.outputConnections[i].toNode.inputSum += this.outputConnections[i].weight * this.outputValue;
+          //add the weighted output to the sum of the inputs of whatever node this node is connected to
         }
       }
     }
@@ -34,26 +35,26 @@ class Node {
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //sigmoid activation function
   sigmoid(x) {
-      return 1.0 / (1.0 + pow(Math.E, -4.9 * x)); //todo check pow
+      return 1.0 / (1.0 + Math.pow(Math.E, -4.9 * x)); //todo check pow
     }
     //----------------------------------------------------------------------------------------------------------------------------------------------------------
     //returns whether this node connected to the parameter node
     //used when adding a new connection
   isConnectedTo(node) {
-      if(node.layer == this.layer) { //nodes in the same this.layer cannot be connected
+      if(node.layer === this.layer) { //nodes in the same this.layer cannot be connected
         return false;
       }
 
       //you get it
       if(node.layer < this.layer) {
-        for(var i = 0; i < node.outputConnections.length; i++) {
-          if(node.outputConnections[i].toNode == this) {
+        for(let i = 0; i < node.outputConnections.length; i++) {
+          if(node.outputConnections[i].toNode === this) {
             return true;
           }
         }
       } else {
-        for(var i = 0; i < this.outputConnections.length; i++) {
-          if(this.outputConnections[i].toNode == node) {
+        for(let i = 0; i < this.outputConnections.length; i++) {
+          if(this.outputConnections[i].toNode === node) {
             return true;
           }
         }
@@ -64,7 +65,7 @@ class Node {
     //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //returns a copy of this node
   clone() {
-    var clone = new Node(this.number);
+    let clone = new Node(this.number);
     clone.layer = this.layer;
     return clone;
   }

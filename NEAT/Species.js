@@ -1,4 +1,4 @@
-class Species {
+export class Species {
 
   constructor(p) {
     this.players = [];
@@ -74,7 +74,7 @@ class Species {
         for (var j = 0; j < brain2.genes.length; j++) {
           if (brain1.genes[i].innovationNo == brain2.genes[j].innovationNo) {
             matching++;
-            totalDiff += abs(brain1.genes[i].weight - brain2.genes[j].weight);
+            totalDiff += Math.abs(brain1.genes[i].weight - brain2.genes[j].weight);
             break;
           }
         }
@@ -88,7 +88,7 @@ class Species {
     //sorts the species by fitness
   sortSpecies() {
 
-    var temp = []; // new ArrayList < Player > ();
+    var temp = []; // new ArrayList < BasePlayer > ();
 
     //selection short
     for (var i = 0; i < this.players.length; i++) {
@@ -108,8 +108,8 @@ class Species {
     }
 
     // this.players = (ArrayList) temp.clone();
-    arrayCopy(temp, this.players);
-    if (this.players.length == 0) {
+    this.players=[...temp];
+    if (this.players.length === 0) {
       this.staleness = 200;
       return;
     }
@@ -137,14 +137,14 @@ class Species {
 
   //gets baby from the this.players in this species
   giveMeBaby(innovationHistory) {
-    var baby;
-    if (random(1) < 0.25) { //25% of the time there is no crossover and the child is simply a clone of a random(ish) player
+    let baby;
+    if (Math.random() < 0.25) { //25% of the time there is no crossover and the child is simply a clone of a random(ish) player
       baby = this.selectPlayer().clone();
     } else { //75% of the time do crossover
 
       //get 2 random(ish) parents
-      var parent1 = this.selectPlayer();
-      var parent2 = this.selectPlayer();
+      let parent1 = this.selectPlayer();
+      let parent2 = this.selectPlayer();
 
       //the crossover function expects the highest fitness parent to be the object and the lowest as the argument
       if (parent1.fitness < parent2.fitness) {
@@ -164,7 +164,7 @@ class Species {
       for (var i = 0; i < this.players.length; i++) {
         fitnessSum += this.players[i].fitness;
       }
-      var rand = random(fitnessSum);
+      let rand = Math.random()*fitnessSum;
       var runningSum = 0;
 
       for (var i = 0; i < this.players.length; i++) {
