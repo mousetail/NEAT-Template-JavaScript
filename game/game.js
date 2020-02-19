@@ -18,6 +18,8 @@ export class Game {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.fillStyle="#222";
+    this.context.fillRect(20,20,500,500);
 
     if (!this.population.done()) {
       this.population.updateAlive(this.context);
@@ -27,14 +29,16 @@ export class Game {
     }
 
     this.writeInfo();
-    this.population.firstLivingPlayer.brain.drawGenome(this.context, 500, 0, 500, 200);
+    this.population.firstLivingPlayer.brain.drawGenome(
+      this.context, this.canvas.width - 700, 250,
+      700, this.canvas.height - 250);
 
     requestAnimationFrame(this.run)
   }
 
   writeInfo() {
     //fill(200);
-    this.context.font = '30px sans-serif';
+    this.context.font = '25px mono';
     this.context.fillStyle = "#FFF";
 
     this.context.textAlign = "right";

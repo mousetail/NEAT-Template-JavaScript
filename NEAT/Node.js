@@ -15,6 +15,8 @@ export class Node {
   engage() {
     if (this.layer !== 0 && !this.isOutput) { //no sigmoid for the inputs and bias
       this.outputValue = this.sigmoid(this.inputSum);
+    } else if (this.isOutput) {
+      this.outputValue = this.inputSum;
     }
 
     for (var i = 0; i < this.outputConnections.length; i++) { //for each connection
@@ -38,7 +40,7 @@ export class Node {
   //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   //sigmoid activation function
   sigmoid(x) {
-    return 1.0 / (1.0 + Math.pow(Math.E, -4.9 * x)); //todo check pow
+    return 2.0 / (1.0 + Math.pow(Math.E, -4.9 * x)) - 1.0; //todo check pow
   }
 
   //----------------------------------------------------------------------------------------------------------------------------------------------------------

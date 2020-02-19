@@ -284,18 +284,16 @@ export class Genome {
       maxConnections += nodesInLayers[i] * nodesInFront;
     }
 
-    if (maxConnections <= this.genes.length) { //if the number of connections is equal to the max number of connections possible then it is full
-      return true;
-    }
+    return maxConnections <= this.genes.length;
 
-    return false;
+
   }
 
 
   //-------------------------------------------------------------------------------------------------------------------------------
   //mutates the genome
   mutate(innovationHistory) {
-    if (this.genes.length == 0) {
+    if (this.genes.length === 0) {
       this.addConnection(innovationHistory);
     }
 
@@ -443,8 +441,6 @@ export class Genome {
     let nodeNumbers = []; // new ArrayList<Integer>();
 
     //get the positions on the screen that each node is supposed to be in
-
-
     //split the this.nodes varo layers
     for (let i = 0; i < this.layers; i++) {
       let temp = []; // new ArrayList<Node>();
@@ -456,7 +452,7 @@ export class Genome {
       allNodes.push(temp); //add this layer to all this.nodes
     }
 
-    //for each layer add the position of the node on the screen to the node posses arraylist
+    //for each layer add the position of the node on the screen to the node posses
     for (let i = 0; i < this.layers; i++) {
       //fill(255, 0, 0);
       let x = startX + ((i + 1.0) * w) / (this.layers + 1.0);
@@ -467,29 +463,22 @@ export class Genome {
       }
     }
 
-    //draw connections
-    //stroke(0);
-    context.strokeWidth = 1;
     for (let i = 0; i < this.genes.length; i++) {
-      if (this.genes[i].enabled) {
-        context.strokeWidth = 1;
-      } else {
-        context.strokeWidth = 100;
-      }
       let from;
       let to;
       from = nodePoses[nodeNumbers.indexOf(this.genes[i].fromNode.number)];
       to = nodePoses[nodeNumbers.indexOf(this.genes[i].toNode.number)];
-      if (this.genes[i].weight > 0) {
+      if (this.genes[i].weight > 0.0) {
         context.strokeStyle = "#FF0000";
       } else {
         context.strokeStyle = "#0000FF";
       }
-      context.lineWidth = (Math.abs(this.genes[i].weight * 6));
+      context.lineWidth = Math.min(1, (Math.abs(this.genes[i].weight * 6)));
       context.beginPath();
       context.moveTo(from.x, from.y);
       context.lineTo(to.x, to.y);
       context.stroke();
+      context.closePath();
     }
 
     //draw this.nodes last so they appear ontop of the connection lines
@@ -498,18 +487,27 @@ export class Genome {
       //stroke(0);
       // strokeWeight(1);
       // ellipse(nodePoses[i].x, nodePoses[i].y, 20, 20);
-      context.fillStyle = "#888";
-      context.fillRect(
-        nodePoses[i].x - 10,
-        nodePoses[i].y - 10,
-        20,
-        20
-      );
+      context.fillStyle = "#fff";
+      context.strokeStyle = "#888";
+      if (this.nodes[i].outputValue > 0.5) {
+        context.strokeStyle = "#FF0000";
+      } else if (this.nodes[i].outputValue > 0) {
+        context.strokeStyle = "#880000"
+      } else if (this.nodes[i].outputValue > -0.5) {
+        context.strokeStyle = "#000088";
+      } else {
+        context.strokeStyle = "#0000FF";
+      }
+      context.lineWidth = 4;
+      context.beginPath();
+      //context.moveTo(nodePoses[i].x, nodePoses[i].y - 10);
+      context.arc(nodePoses[i].x, nodePoses[i].y - 7.5, 15, 0, 2 * Math.PI);
 
-      // textSize(10);
-      // fill(0);
+      context.fill();
+      context.stroke();
+      context.closePath();
       context.textAlign = 'center';
-      context.fillStyle = '#fff';
+      context.fillStyle = '#000';
       context.fillText(nodeNumbers[i], nodePoses[i].x, nodePoses[i].y);
 
     }

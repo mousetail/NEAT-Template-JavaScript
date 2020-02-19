@@ -5,7 +5,7 @@ import {sigmoid} from "../math/activation";
 
 export class BlobCharacter extends BasePlayer {
   constructor() {
-    super(6, 2);
+    super(8, 2);
 
     this.position = new Vector(250, 250);
     this.speed = new Vector(1, 0);
@@ -27,28 +27,35 @@ export class BlobCharacter extends BasePlayer {
   }
 
   show(context) {
-    context.translate(this.position.x + 10, this.position.y + 10);
+    context.translate(this.position.x + 20, this.position.y + 20);
     context.rotate(this.angle);
     context.fillStyle = "rgb(" + this.color[0] + "," + this.color[1] + "," + this.color[2] + ")";
 
+    const energy = Math.max(5, this.energy);
+    const speed = Math.max(-0.25, this.decision[0]);
+
     context.beginPath();
-    context.moveTo(-this.energy / 40, this.energy / 40);
-    context.lineTo(0, -this.decision[0] * this.energy / 40);
-    context.lineTo(this.energy / 40, this.energy / 40);
-    context.lineTo(0, this.energy / 40 - this.decision[0] * this.energy / 120);
+    context.moveTo(-energy / 40, energy / 40); //Top Left Corner
+    context.lineTo(-energy / 60, energy/80); //Halfway top edge
+    context.lineTo(this.decision[1] * energy / 40, -speed * energy / 40); //Point
+    context.lineTo(0, energy / 40 - speed * this.energy / 80); //Middle Left Point
+    context.closePath();
     context.fill();
 
-    //context.fillRect(-this.energy / 40, -this.energy / 40, this.energy / 20, this.energy / 20);
+
+    context.fillStyle = "rgb(" + this.color[0]/2 + "," + this.color[1]/2 + "," + this.color[2]/2 + ")";
+
+    context.beginPath();
+    context.lineTo(this.decision[1] * this.energy / 40, -speed * this.energy / 40); //Point
+    context.lineTo(this.energy/60, this.energy/80); //Halfway bottom edge
+    context.lineTo(this.energy / 40, this.energy / 40); //Bottom Left Corner
+    context.lineTo(0, this.energy / 40 - speed * this.energy / 80); //Middle Left Point
+    context.fill();
+
     context.strokeStyle = "#F00";
 
-
-    // context.beginPath();
-    // context.lineTo(0, 0);
-    // context.lineTo(0, -this.distance);
-    // context.stroke();
-
     context.rotate(-this.angle);
-    context.translate(-this.position.x - 10, -this.position.y - 10);
+    context.translate(-this.position.x - 20, -this.position.y - 20);
   }
 
   move() {
@@ -64,7 +71,7 @@ export class BlobCharacter extends BasePlayer {
     this.angle += turn / 5;
     this.angle = this.angle % (Math.PI * 2);
 
-    const accel = sigmoid(this.decision[0]);
+    const accel = Math.max(0, sigmoid(this.decision[0]));
 
     this.acceleration = new Vector(
       accel * Math.sin(this.angle) / 32,
@@ -78,7 +85,7 @@ export class BlobCharacter extends BasePlayer {
       this.dead = true;
     }
 
-    this.energy -= Math.min(0, 1 - Math.sqrt(this.speed.x * this.speed.x + this.speed.y * this.speed.y) / 2);
+    this.energy -= Math.min(0, 1 - Math.sqrt(this.speed.x * this.speed.x + this.speed.y * this.speed.y) / 4);
     this.energy -= Math.abs(this.decision[1]);
     if (this.energy <= 0) {
       this.dead = true;
@@ -106,6 +113,9 @@ export class BlobCharacter extends BasePlayer {
 
     const edgePretransform = (i) => (i < 200 ? 200 - i : 0) / 100;
 
+    const verticalSpeed = Math.sin(this.angle) * this.speed.x - Math.cos(this.angle) * this.speed.y;
+    const horizontalSpeed = Math.cos(this.angle) * this.speed.x + Math.sin(this.angle) * this.speed.y;
+
 
     this.vision = [
       edgePretransform(this.distance = this.distanceFromEdge(this.angle)),
@@ -114,6 +124,8 @@ export class BlobCharacter extends BasePlayer {
       edgePretransform(this.distanceFromEdge(this.angle + Math.PI / 4)),
       edgePretransform(this.distanceFromEdge(this.angle - Math.PI / 4)),
       edgePretransform(this.distanceFromEdge(this.angle + Math.PI)),
+      verticalSpeed,
+      horizontalSpeed
 
     ]
   }
@@ -128,9 +140,9 @@ export class BlobCharacter extends BasePlayer {
     clone.gen = this.gen;
     clone.bestScore = this.score;
 
-    clone.color[0] = clamp(this.color[0] + (Math.random() * 10 - 5), 0, 255);
-    clone.color[1] = clamp(this.color[1] + (Math.random() * 10 - 5), 0, 255);
-    clone.color[2] = clamp(this.color[2] + (Math.random() * 10 - 5), 0, 255);
+    clone.color[0] = clamp(this.color[0] + (Math.random() * 10 - 5), 64, 255);
+    clone.color[1] = clamp(this.color[1] + (Math.random() * 10 - 5), 64, 255);
+    clone.color[2] = clamp(this.color[2] + (Math.random() * 10 - 5), 64, 255);
 
     return clone;
   }
