@@ -37,8 +37,6 @@ export class BasePlayer {
         }
 
         return this.decision;
-
-        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<replace
     }
 
 
