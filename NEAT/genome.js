@@ -27,43 +27,20 @@ export class Genome {
       this.nodes[i].layer = 0;
     }
 
-    //create output this.nodes
-    for (let i = 0; i < this.outputs; i++) {
-      this.nodes.push(new Node(i + this.inputs, true));
-      this.nodes[i + this.inputs].layer = 1;
-      this.nextNode++;
-    }
-
+    //bias nodes
     this.nodes.push(new Node(this.nextNode)); //bias node
     this.biasNode = this.nextNode;
     this.nextNode++;
+
+    //create output this.nodes
+    this.output_nodes = this.nextNode;
     this.nodes[this.biasNode].layer = 0;
 
-
-  }
-
-
-  fullyConnect(innovationHistory) {
-
-    //this will be a new number if no identical genome has mutated in the same
-
-    for (let i = 0; i < this.inputs; i++) {
-      for (let j = 0; j < this.outputs; j++) {
-        let connectionInnovationNumber = this.getInnovationNumber(innovationHistory, this.nodes[i], this.nodes[this.nodes.length - j - 2]);
-        this.genes.push(new ConnectionGene(this.nodes[i], this.nodes[this.nodes.length - j - 2], random(-1, 1), connectionInnovationNumber));
-      }
+    for (let i = 0; i < this.outputs; i++) {
+      this.nodes.push(new Node(this.nextNode, true));
+      this.nodes[this.nextNode].layer = 1;
+      this.nextNode++;
     }
-
-    let connectionInnovationNumber = this.getInnovationNumber(innovationHistory, this.nodes[this.biasNode], this.nodes[this.nodes.length - 2]);
-    this.genes.push(new ConnectionGene(this.nodes[this.biasNode], this.nodes[this.nodes.length - 2], random(-1, 1), connectionInnovationNumber));
-
-    connectionInnovationNumber = this.getInnovationNumber(innovationHistory, this.nodes[this.biasNode], this.nodes[this.nodes.length - 3]);
-    this.genes.push(new ConnectionGene(this.nodes[this.biasNode], this.nodes[this.nodes.length - 3], random(-1, 1), connectionInnovationNumber));
-    //add the connection with a random array
-
-
-    //changed this so if error here
-    this.connectNodes();
   }
 
 
@@ -96,24 +73,28 @@ export class Genome {
   //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   //feeding in input values varo the NN and returning output array
   feedForward(inputValues) {
+    for (let i = 0; i < this.nodes.length; i++) { //reset all the this.nodes for the next feed forward
+      this.nodes[i].inputSum = 0;
+      this.nodes[i].outputValue = 0;
+    }
+
+    this.nodes[this.biasNode].outputValue = 1;
+
     //set the outputs of the input this.nodes
     for (let i = 0; i < this.inputs; i++) {
+      if (this.nodes[i].layer !== 0) {
+        throw Error("Node in wrong layer")
+      }
       this.nodes[i].outputValue = inputValues[i];
     }
-    this.nodes[this.biasNode].outputValue = 1; //output of bias is 1
 
     for (let i = 0; i < this.network.length; i++) { //for each node in the network engage it(see node class for what this does)
       this.network[i].engage();
     }
 
-    //the outputs are this.nodes[inputs] to this.nodes [inputs+outputs-1]
     let outs = [];
     for (let i = 0; i < this.outputs; i++) {
-      outs[i] = this.nodes[this.inputs + i].outputValue;
-    }
-
-    for (let i = 0; i < this.nodes.length; i++) { //reset all the this.nodes for the next feed forward
-      this.nodes[i].inputSum = 0;
+      outs[i] = this.nodes[this.output_nodes + i].outputValue;
     }
 
     return outs;
@@ -137,7 +118,6 @@ export class Genome {
     }
   }
 
-  //-----------------------------------------------------------------------------------------------------------------------------------------
   //mutate the NN by adding a new node
   //it does this by picking a random connection and disabling it then 2 new connections are added
   //1 between the input node of the disabled connection and the new node
@@ -145,24 +125,28 @@ export class Genome {
   addNode(innovationHistory) {
     //pick a random connection to create a node between
     if (this.genes.length === 0) {
-      this.addConnection(innovationHistory);
-      return;
+      return this.addConnection(innovationHistory);
     }
+
     let randomConnection = Math.floor(Math.random() * this.genes.length);
 
-    while (this.genes[randomConnection].fromNode === this.nodes[this.biasNode] && this.genes.length !== 1) { //dont disconnect bias
+    while (
+      this.genes[randomConnection].fromNode === this.nodes[this.biasNode] &&
+      this.genes.length !== 1) { //dont disconnect bias
       randomConnection = Math.floor(Math.random() * this.genes.length);
     }
 
-    this.genes[randomConnection].enabled = false; //disable it
+    //Before creating a new connection, disable the old connection
+    this.genes[randomConnection].enabled = false;
 
+    //Create a new node
     let newNodeNo = this.nextNode;
     this.nodes.push(new Node(newNodeNo));
     this.nextNode++;
+
     //add a new connection to the new node with a weight of 1
     let connectionInnovationNumber = this.getInnovationNumber(innovationHistory, this.genes[randomConnection].fromNode, this.getNode(newNodeNo));
     this.genes.push(new ConnectionGene(this.genes[randomConnection].fromNode, this.getNode(newNodeNo), 1, connectionInnovationNumber));
-
 
     connectionInnovationNumber = this.getInnovationNumber(innovationHistory, this.getNode(newNodeNo), this.genes[randomConnection].toNode);
     //add a new connection from the new node with a weight the same as the disabled connection
@@ -175,7 +159,7 @@ export class Genome {
     this.genes.push(new ConnectionGene(this.nodes[this.biasNode], this.getNode(newNodeNo), 0, connectionInnovationNumber));
 
     //if the layer of the new node is equal to the layer of the output node of the old connection then a new layer needs to be created
-    //more accurately the layer numbers of all layers equal to or greater than this new node need to be incrimented
+    //more accurately the layer numbers of all layers equal to or greater than this new node need to be incremented
     if (this.getNode(newNodeNo).layer === this.genes[randomConnection].toNode.layer) {
       for (let i = 0; i < this.nodes.length - 1; i++) { //dont include this newest node
         if (this.nodes[i].layer >= this.getNode(newNodeNo).layer) {
@@ -330,21 +314,22 @@ export class Genome {
     child.layers = this.layers;
     child.nextNode = this.nextNode;
     child.biasNode = this.biasNode;
-    let childGenes = []; // new ArrayList<connectionGene>();//list of genes to be inherrited form the parents
-    let isEnabled = []; // new ArrayList<Boolean>();
+    child.output_nodes = this.output_nodes;
+    let childGenes = []; //list of genes to be inherited form the parents
+    let isEnabled = [];
     //all inherited genes
     for (let i = 0; i < this.genes.length; i++) {
-      let setEnabled = true; //is this node in the chlid going to be enabled
+      let setEnabled = true; //is this node in the child going to be enabled
 
       let parent2gene = this.matchingGene(parent2, this.genes[i].innovationNo);
       if (parent2gene !== -1) { //if the genes match
         if (!this.genes[i].enabled || !parent2.genes[parent2gene].enabled) { //if either of the matching genes are disabled
 
-          if (Math.random < 0.75) { //75% of the time disable the childs gene
+          if (Math.random() < 0.75) { //75% of the time disable the childs gene
             setEnabled = false;
           }
         }
-        let rand = Math.random;
+        let rand = Math.random();
         if (rand < 0.5) {
           childGenes.push(this.genes[i]);
 
@@ -427,6 +412,7 @@ export class Genome {
     clone.layers = this.layers;
     clone.nextNode = this.nextNode;
     clone.biasNode = this.biasNode;
+    clone.output_nodes = this.output_nodes;
     clone.connectNodes();
 
     return clone;
@@ -436,9 +422,10 @@ export class Genome {
   //draw the genome on the screen
   drawGenome(context, startX, startY, w, h) {
     //i know its ugly but it works (and is not that important) so I'm not going to mess with it
-    let allNodes = []; //new ArrayList<ArrayList<Node>>();
-    let nodePoses = []; // new ArrayList<PVector>();
-    let nodeNumbers = []; // new ArrayList<Integer>();
+    let allNodes = [];
+    let nodePoses = [];
+    let nodeNumbers = [];
+    let nodeLayers = [];
 
     //get the positions on the screen that each node is supposed to be in
     //split the this.nodes varo layers
@@ -455,11 +442,12 @@ export class Genome {
     //for each layer add the position of the node on the screen to the node posses
     for (let i = 0; i < this.layers; i++) {
       //fill(255, 0, 0);
-      let x = startX + ((i + 1.0) * w) / (this.layers + 1.0);
+      let x = startX + ((i + 1.0) * (w - 25)) / (this.layers);
       for (let j = 0; j < allNodes[i].length; j++) { //for the position in the layer
         let y = startY + ((j + 1.0) * h) / (allNodes[i].length + 1.0);
         nodePoses.push(new Vector(x, y));
         nodeNumbers.push(allNodes[i][j].number);
+        nodeLayers.push(allNodes[i][j].layer)
       }
     }
 
@@ -468,12 +456,14 @@ export class Genome {
       let to;
       from = nodePoses[nodeNumbers.indexOf(this.genes[i].fromNode.number)];
       to = nodePoses[nodeNumbers.indexOf(this.genes[i].toNode.number)];
-      if (this.genes[i].weight > 0.0) {
+      if (!this.genes[i].enabled) {
+        context.strokeStyle = "#888888";
+      } else if (this.genes[i].weight > 0.0) {
         context.strokeStyle = "#FF0000";
       } else {
         context.strokeStyle = "#0000FF";
       }
-      context.lineWidth = Math.min(1, (Math.abs(this.genes[i].weight * 6)));
+      context.lineWidth = Math.max(1, (Math.abs(this.genes[i].weight * 6)));
       context.beginPath();
       context.moveTo(from.x, from.y);
       context.lineTo(to.x, to.y);
@@ -481,15 +471,13 @@ export class Genome {
       context.closePath();
     }
 
-    //draw this.nodes last so they appear ontop of the connection lines
+    //draw this.nodes last so they appear on top of the connection lines
     for (let i = 0; i < nodePoses.length; i++) {
-      //fill(255);
-      //stroke(0);
-      // strokeWeight(1);
-      // ellipse(nodePoses[i].x, nodePoses[i].y, 20, 20);
       context.fillStyle = "#fff";
       context.strokeStyle = "#888";
-      if (this.nodes[i].outputValue > 0.5) {
+      if (this.nodes[i].outputValue === 0.0) {
+        context.strokeStyle = "#888888";
+      } else if (this.nodes[i].outputValue > 0.5) {
         context.strokeStyle = "#FF0000";
       } else if (this.nodes[i].outputValue > 0) {
         context.strokeStyle = "#880000"
@@ -508,7 +496,7 @@ export class Genome {
       context.closePath();
       context.textAlign = 'center';
       context.fillStyle = '#000';
-      context.fillText(nodeNumbers[i], nodePoses[i].x, nodePoses[i].y);
+      context.fillText(nodeLayers[i], nodePoses[i].x, nodePoses[i].y);
 
     }
 

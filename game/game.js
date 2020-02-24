@@ -1,14 +1,22 @@
 import {Population} from '../NEAT/Population';
 import {BlobCharacter} from './blobCharacter';
+import {WebGLContext} from "../webgl/webgl";
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.context = this.canvas.getContext('2d');
 
-    this.run = this.run.bind(this);
+    //const context3d = this.canvas.getContext('webgl');
+    //console.log(context3d);
+    //this.glContext = new WebGLContext(context3d);
 
-    let b = new BlobCharacter();
+    //let canv = document.createElement("canvas");
+    //canv.width = this.canvas.width;
+    //canv.height = this.canvas.height;
+    //this.context = canv.getContext('2d');
+
+    this.run = this.run.bind(this);
 
     this.population = new Population(500, () => (new BlobCharacter()));
 
@@ -17,6 +25,10 @@ export class Game {
   run() {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
+
+    //this.glContext.draw();
+
+    this.context.fillStyle="#000";
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.fillStyle="#222";
     this.context.fillRect(20,20,500,500);

@@ -19,7 +19,7 @@ export class Node {
       this.outputValue = this.inputSum;
     }
 
-    for (var i = 0; i < this.outputConnections.length; i++) { //for each connection
+    for (let i = 0; i < this.outputConnections.length; i++) { //for each connection
       if (this.outputConnections[i].enabled) { //dont do shit if not enabled
         this.outputConnections[i].toNode.inputSum += this.outputConnections[i].weight * this.outputValue;
         //add the weighted output to the sum of the inputs of whatever node this node is connected to
